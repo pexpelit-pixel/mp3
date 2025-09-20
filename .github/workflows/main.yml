@@ -1,55 +1,64 @@
-name: Auto Convert WebM to WA-Compatible Opus & Release
+name: Download MP3 & Convert to Opus Release
 on:
-  workflow_dispatch: # bisa diganti push/tag sesuai kebutuhan
+  workflow_dispatch:
 
 jobs:
-  convert_release:
+  download_convert_release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo (opsional, tapi dibutuhkan untuk actions)
-      - name: Checkout repository
+      # 1. Checkout repo
+      - name: Checkout
         uses: actions/checkout@v3
 
-      # 2. Install dependencies: wget & ffmpeg
+      # 2. Install dependencies
       - name: Install ffmpeg & wget
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg wget
 
-      # 3. Download file WebM dari URL
-      - name: Download WebM
+      # 3. Download MP3
+      - name: Download MP3
         run: |
-          WEBM_URL="https://rr5---sn-n3toxu-axqs.googlevideo.com/videoplayback?expire=1758407193&ei=udXOaOapMdOHv_IPr8fBIA&ip=188.242.195.188&id=o-ABQIk0blBV56_k51o7cVW9ZmjSGp7WqqCq1lUU9TeZXp&itag=250&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&met=1758385593%2C&mh=Cq&mm=31%2C29&mn=sn-n3toxu-axqs%2Csn-axq7sn7z&ms=au%2Crdu&mv=m&mvi=5&pl=21&rms=au%2Cau&initcwndbps=2593750&bui=ATw7iSV3BV9jrzbtRcMjdJ93X-rWmL5QW5MZMOW-Niq2n9rkX8rQmFk1ckFWEIiYwruj53RXZe-2zsTp&vprv=1&svpuc=1&mime=audio%2Fwebm&ns=xnrX5GsvH4SO97SmxjQZ06oQ&rqh=1&gir=yes&clen=63396665&dur=7338.141&lmt=1753305597250079&mt=1758385099&fvip=6&keepalive=yes&lmw=1&fexp=51565116%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=4532534&n=mPxe3wMnHEbeZw&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&lsparams=met%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMT27M5dlRzQo0QxCn5bPDu2aQV9G8wsJ3BJttZqFCvdAiEAry9COfxeHN9medzqa5Lxt5IF8zAA6nL9RGlbClKKY0Q%3D&sig=AJfQdSswRgIhALsiq0v98wwb3GEgewqg7nHgIqYxbE8bdIzWxVo0O81wAiEArWrSbPdIC2qB4pHJAd7UuCquD8UFBdtymPVrNMEh6kY%3D" 
-          wget "$WEBM_URL" -O original.webm
+          wget --user-agent="Mozilla/5.0" \
+          "https://theta.123tokyo.xyz/get.php/a/63/Y1xRFwLBpWw.mp3?n=Good%20mood%F0%9F%98%8EPositive%20songs%20to%20start%20your%20day%20-%20Tiktok%20Trending%20Songs%202023%20%232&uT=R&uN=RWxzYXZhZG9y&h=7v7IT6QE-VRwzwSUNZp7dw&s=1758388397&uT=R&uN=RWxzYXZhZG9y" \
+          -O "Good_Mood_Song.mp3"
 
-      # 4. Convert ke Opus WA-compatible
-      - name: Convert to WA-compatible Opus
+      # 4. Convert to WA-compatible Opus
+      - name: Convert MP3 to Opus WA-compatible
         run: |
-          ffmpeg -i original.webm \
+          ffmpeg -i "Good_Mood_Song.mp3" \
                  -c:a libopus \
                  -ar 16000 \
                  -ac 1 \
                  -b:a 32k \
                  -map_metadata 0 \
-                 output.opus
+                 "Good_Mood_Song.opus"
 
-      # 5. Create GitHub Release (jika belum ada)
-      - name: Create GitHub Release
+      # 5. Create GitHub Release
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: v1.0.0
-          release_name: WA Opus Release v1.0.0
+          release_name: MP3 & Opus Release v1.0.0
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 6. Upload file Opus ke release
-      - name: Upload Opus to Release
+      # 6. Upload MP3 & Opus
+      - name: Upload MP3
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./output.opus
-          asset_name: output.opus
+          asset_path: ./Good_Mood_Song.mp3
+          asset_name: Good_Mood_Song.mp3
+          asset_content_type: audio/mpeg
+
+      - name: Upload Opus
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Good_Mood_Song.opus
+          asset_name: Good_Mood_Song.opus
           asset_content_type: audio/opus
