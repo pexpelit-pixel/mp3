@@ -1,0 +1,55 @@
+name: Auto Convert WebM to WA-Compatible Opus & Release
+on:
+  workflow_dispatch: # bisa diganti push/tag sesuai kebutuhan
+
+jobs:
+  convert_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repo (opsional, tapi dibutuhkan untuk actions)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Install dependencies: wget & ffmpeg
+      - name: Install ffmpeg & wget
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg wget
+
+      # 3. Download file WebM dari URL
+      - name: Download WebM
+        run: |
+          WEBM_URL="https://rr4---sn-npoeenee.googlevideo.com/videoplayback?expire=..." 
+          wget "$WEBM_URL" -O original.webm
+
+      # 4. Convert ke Opus WA-compatible
+      - name: Convert to WA-compatible Opus
+        run: |
+          ffmpeg -i original.webm \
+                 -c:a libopus \
+                 -ar 16000 \
+                 -ac 1 \
+                 -b:a 32k \
+                 -map_metadata 0 \
+                 output.opus
+
+      # 5. Create GitHub Release (jika belum ada)
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v1.0.0
+          release_name: WA Opus Release v1.0.0
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 6. Upload file Opus ke release
+      - name: Upload Opus to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output.opus
+          asset_name: output.opus
+          asset_content_type: audio/opus
