@@ -1,4 +1,4 @@
-name: Download MP3 & Convert to Opus Release
+name: Download MP3 & Convert to Opus Release (curl)
 on:
   workflow_dispatch:
 
@@ -12,17 +12,18 @@ jobs:
         uses: actions/checkout@v3
 
       # 2. Install dependencies
-      - name: Install ffmpeg & wget
+      - name: Install ffmpeg & curl
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg wget
+          sudo apt-get install -y ffmpeg curl
 
-      # 3. Download MP3
+      # 3. Download MP3 using curl
       - name: Download MP3
         run: |
-          wget --user-agent="Mozilla/5.0" \
-          "https://theta.123tokyo.xyz/get.php/a/63/Y1xRFwLBpWw.mp3?n=Good%20mood%F0%9F%98%8EPositive%20songs%20to%20start%20your%20day%20-%20Tiktok%20Trending%20Songs%202023%20%232&uT=R&uN=RWxzYXZhZG9y&h=7v7IT6QE-VRwzwSUNZp7dw&s=1758388397&uT=R&uN=RWxzYXZhZG9y" \
-          -O "Good_Mood_Song.mp3"
+          curl -L --retry 5 --max-time 600 \
+               -A "Mozilla/5.0" \
+               "https://theta.123tokyo.xyz/get.php/a/63/Y1xRFwLBpWw.mp3?n=Good%20mood%F0%9F%98%8EPositive%20songs%20to%20start%20your%20day%20-%20Tiktok%20Trending%20Songs%202023%20%232&uT=R&uN=RWxzYXZhZG9y&h=7v7IT6QE-VRwzwSUNZp7dw&s=1758388397&uT=R&uN=RWxzYXZhZG9y" \
+               -o "Good_Mood_Song.mp3"
 
       # 4. Convert to WA-compatible Opus
       - name: Convert MP3 to Opus WA-compatible
